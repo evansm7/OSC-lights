@@ -1,0 +1,79 @@
+OSC-lights
+==========
+
+A simple Open Sound Control (OSC) parser, within an ESP8266 application to
+control an LED/light.  This project uses the Sming ESP8266 framework:
+	https://github.com/SmingHub/Sming
+
+(c) Matt Evans, 17th June 2015.  See LICENCE for application.cpp, osc.cpp and
+osc.h licence.  user-config.h, Makefile, Makefile-user.mk are based on the
+ordinary Sming application skeleton.
+
+
+This demo application listens for an OSC message to set of (hardwired for demo
+purposes) OSC addresses and, in response, changes the brightness of an LED using
+the Sming HardwarePWM class.  In addition, an on/off button is supported.
+
+This is tested with an ESP-01 module, with an LED on pin 2 and button on pin 0.
+It has been tested by sending messages from the 'Control' iOS app.
+
+
+OSC
+====
+
+The OSC routines in osc.cpp and osc.h implement the following functions:
+
+    void    osc_reg_handler(const char *prefix, cb_t callback);
+    void    osc_parse_msg(const char *msg);
+
+First, a callback handler for a given OSC address prefix is set up by calling
+osc_reg_handler().  This handler is called whenever a message is parsed to match
+the given address.
+
+The code intentionally avoids dynamic allocation and as such there is a fixed
+limit to the number of callbacks that can be registered.
+
+Listen on UDP port 10000.  (Or whatever your OSC client is expecting.)
+
+When a UDP packet is received on this port, simply call osc_parse_msg() pointing
+to the payload data.  The parser will invoke a matched callback.
+
+Benefits:
+- Supports multiple arguments (up to 16)
+- Generally works with simple messages
+
+Caveats:
+
+- Fixed limit to number of addresses/callbacks
+- Fixed limit to number of arguments
+- No error responses
+- The parser is easy to confuse and is very definitely not security-hardened
+- Only supports 'i' and 'f' flags for int32 and float parameters
+- Doesn't support the full OSC message grammar
+
+
+Configuration
+==============
+
+Edit app/application.cpp to set up the WiFi SSID/password in the WIFI_SSID and
+WIFI_PWD #defines.
+
+As supplied, the Makefile-user.mk assumes that:
+- Sming is installed at:   	/opt/sming/Sming
+- ESP SDK is installed at:	/opt/esp-open-sdk
+
+Edit the file to taste, if required.
+
+
+Building
+=========
+
+Make sure you have the prerequisites of Sming and the ESP SDK installed.
+
+Execute:
+
+	$ make
+	$ make flash
+
+If you have serial hooked up, you should see some debug.
+
